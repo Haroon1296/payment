@@ -1,0 +1,74 @@
+<?php
+ 
+namespace App\Http\Controllers;
+ 
+use Illuminate\Http\Request;
+use Omnipay\Omnipay;
+use Omnipay\Common\CreditCard;
+
+
+class PaymentController extends Controller
+{
+ 
+    public $gateway;
+ 
+    public function __construct()
+    {
+        $this->gateway = Omnipay::create('PayPal_Rest');
+        
+        $this->gateway->initialize(array(
+            'clientId' => 'ARyeDkmCdFqblL9t38KrSgozX_sIv9C8HbHrCgP55o0gA5w2vQ5bxO0rcKFWr4b5-SO6m_1oRKzA29sD',
+            'secret'   => 'EJzXuaF8z1xjQe-WchfkuBz8k3sKxuGz_pTu5HjYYesslOwv4jUdcu8scksB_5X1UMwUHipWepsSrsng',
+            'testMode' => true, // Or false when you are ready for live transactions
+        ));
+    }
+ 
+
+ 
+    public function index()
+    {
+        // $arr_expiry = explode("/", $request->input('expiry'));
+       
+        $card = new CreditCard(array(
+            'firstName' => 'Example',
+            'lastName' => 'User',
+            'number' => '4032039506550971',
+            'expiryMonth'           => '01',
+            'expiryYear'            => '2021',
+            'cvv'                   => '123',
+            'billingAddress1'       => '1 Scrubby Creek Road',
+            'billingCountry'        => 'AU',
+            'billingCity'           => 'Scrubby Creek',
+            'billingPostcode'       => '4999',
+            'billingState'          => 'QLD',
+         ));
+         
+         try {
+            $transaction = $this->gateway->purchase(array(
+                'amount'        => '100.00',
+                'currency'      => 'USD',
+                'description'   => 'This is a test purchase transaction.',
+                'card'          => $card,
+            ));
+
+            $response = $transaction->send();
+            $data = $response->getData();
+
+            echo "<pre>";
+            print_r($data);
+    
+            if ($response->isSuccessful()) 
+            {
+                echo "Purchase transacStion was successful!\n";
+            }
+        } 
+        catch (\Exception $e) 
+        {
+            echo "Exception caught while attempting authorize.\n";
+            echo "Exception type == " . get_class($e) . "\n";
+            echo "Message == " . $e->getMessage() . "\n";
+        }     
+    }
+}
+
+https://artisansweb.net/paypal-payments-pro-integration-in-laravel/
